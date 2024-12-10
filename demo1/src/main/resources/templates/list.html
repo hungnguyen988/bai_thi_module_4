@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách sản phẩm</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>DANH SÁCH SẢN PHẨM</h1>
+    <form action="/product/search-by-category" method="get" class="form-inline mb-3">
+        <div class="form-group mr-2">
+            <label for="categoryId" class="mr-2">Chọn loại sản phẩm:</label>
+            <select name="categoryId" id="categoryId" class="form-control">
+                <option value="">Tất cả</option>
+                <option th:each="category : ${categories}"
+                        th:value="${category.id}"
+                        th:text="${category.name}">
+                </option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Tìm theo loại sản phẩm</button>
+    </form>
+
+
+    <form>
+        <input type="text" name="searchName">
+        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+    </form>
+    <a href="/product/add" class="btn btn-success mt-2 mb-2">Thêm sản phẩm mới</a>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>STT</th>
+            <th>Tên</th>
+            <th>Giá</th>
+            <th>Loại sản phẩm</th>
+            <th>Trạng thái</th>
+            <th>Hoạt động</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product, status : ${products.content}">
+            <td th:text="${status.index + 1}">1</td>
+            <td th:text="${product.name}">Tên sản phẩm</td>
+            <td th:text="${product.price}">Giá</td>
+            <td th:text="${product.getProductCategory().getName()}">Loại sản phẩm</td>
+            <td th:text="${product.status}">Trạng thái</td>
+            <td>
+                <a th:href="@{/product/edit(id=${product.id})}" class="btn btn-warning btn-sm">Cập nhật</a>
+                <button class="btn btn-danger btn-sm delete-btn" th:data-id="${product.id}" th:data-name="${product.name}">Xóa</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <nav>
+        <ul class="pagination">
+            <li class="page-item" th:if="${products.hasPrevious()}">
+                <a class="page-link" th:href="@{/product(page=${products.number - 1},searchName=${searchName})}">Trước</a>
+            </li>
+            <li class="page-item">
+                <span class="page-link" th:text="${products.number + 1}"></span>
+            </li>
+            <li class="page-item">
+                <span class="page-link" th:text="${products.totalPages}"></span>
+            </li>
+            <li class="page-item" th:if="${products.hasNext()}">
+                <a class="page-link" th:href="@{/product(page=${products.number + 1},searchName=${searchName})}">Sau</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa sản phẩm "<span id="productName"></span>"?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <a href="#" id="deleteLink" class="btn btn-danger">Xóa</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var id = this.getAttribute('data-id');
+                var name = this.getAttribute('data-name');
+                showDeleteModal(id, name);
+            });
+        });
+    });
+
+    function showDeleteModal(id, name) {
+        document.getElementById('productName').textContent = name;
+        document.getElementById('deleteLink').href = '/product/delete?id=' + id;
+        $('#deleteModal').modal('show');
+    }
+</script>
+</body>
+</html>
